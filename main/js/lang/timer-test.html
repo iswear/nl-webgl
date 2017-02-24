@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script src="timer.js"></script>
+<script>
+    i = 0;
+    (function (nl, win, doc) {
+        nl.timer.setLooper(function () {
+            console.log(++i);
+        }, null)
+    })(nl, window, document);
+</script>
+</body>
+</html>
