@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<script src="../extend.js"></script>
+<script src="../object.js"></script>
+<script>
+
+    var cla1 = nl.extend(nl.Object);
+    cla1.prototype.init = function (config) {
+        console.log("Object 1");
+    }
+
+    var cla2 = nl.extend(cla1);
+    cla2.prototype.init = function (config) {
+        this.super("init", [config]);
+        console.log("Object 2");
+    }
+    
+    var cla3 = nl.extend(cla2);
+    cla3.prototype.init = function (config) {
+        this.super("init", [config]);
+        console.log("Object 3");
+    }
+
+    var a = new cla3();
+
+    a.init();
+
+</script>
+</body>
+</html>

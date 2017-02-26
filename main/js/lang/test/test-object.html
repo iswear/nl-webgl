@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script src="../extend.js"></script>
+<script src="../constant.js"></script>
+<script src="../object.js"></script>
+<script>
+
+    var obj = new nl.Object();
+
+    obj.addObserver("helloworld", function (sender, param) {
+        console.log(param);
+    }, obj, window);
+
+    obj.postNotification("helloworld", obj, "helloworld");
+
+//    obj.setProperty("width", 200);
+
+
+    var bb = nl.extend(nl.Object);
+    bb.prototype.init = function (config) {
+        this.super("init", [config]);
+        this.x = 10;
+        this.y = 10;
+    }
+
+    var cc = nl.extend(bb);
+    cc.prototype.init = function (config) {
+        this.super("init", [config]);
+        this.width = 10;
+        this.height = 10;
+    }
+
+
+    var d = new cc();
+    console.log(d);
+
+</script>
+</body>
+</html>

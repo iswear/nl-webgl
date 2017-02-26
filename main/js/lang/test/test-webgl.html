@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<canvas id="1" width="500" height="400"></canvas>
+<script src="../constant.js"></script>
+<script src="../timer.js"></script>
+<script src="../matrix.js"></script>
+<script src="../extend.js"></script>
+<script src="../object.js"></script>
+<script src="../render.js"></script>
+
+<script id="vs" type="x-shader/x-vertex">
+attribute vec3 position;
+attribute vec3 normal;
+attribute vec4 color;
+uniform   mat4 mMatrix;
+uniform   mat4 vMatrix;
+uniform   mat4 pMatrix;
+uniform   mat4 invMatrix;
+uniform   vec3 lightDirection;
+varying   vec4 vColor;
+void main(void){
+    vec3  invLight = normalize(invMatrix * vec4(lightDirection, 0.0)).xyz;
+    float diffuse  = clamp(dot(normal, invLight), 0.1, 1.0);
+    vColor         = color * vec4(vec3(diffuse), 1.0);
+    gl_Position    = pMatrix * vMatrix * mMatrix * vec4(position, 1.0);
+}
+</script>
+
+<script id="fs" type="x-shader/x-fragment">
+precision mediump float;
+varying vec4 vColor;
+void main(void){
+    gl_FragColor = vColor;
+}
+</script>
+<script>
+
+
+    (function (nl, win, doc) {
+
+
+        var m = nl.matrix;
+        var vs, fs, program;
+        var angle = 0, datas;
+        
+        var app = new nl.render.webgl({
+            glCanvas: document.getElementById("1"),
+            renderInit: function () {
+
+                var gl = this.getGLContext();
+                gl.viewport(100, 100, 300, 300);
+                /**
+                 * 创建顶点合片元着色器
+                 */
+                vs = this.createVertexShader(document.getElementById("vs").innerText);
+                fs = this.createFragmentShader(document.getElementById("fs").innerText);
+                /**
+                 * 创建并关联程序
+                 * @type {WebGLProgram}
+                 */
+                program = this.createProgram(vs, fs);
+                gl.linkProgram(program);
+                gl.useProgram(program);
+
+                /**
+                 * 创建顶点缓存;
+                 */
+                datas = torus(32, 32, 1.0, 2.0);
+
+//                var vertexVbo = this.createVbo([
+//                    0.0,  1.0,  0.0,
+//                    1.0,  0.0,  0.0,
+//                    -1.0, 0.0,  0.0,
+//                    0.0,  -1.0, 0.0,
+//                ]);
+                var vertexVbo = this.createVbo(datas.pos);
+                this.postVertexAttrib(program, "position", 3, vertexVbo);
+
+                var norVbo = this.createVbo(datas.nor);
+                this.postVertexAttrib(program, "normal", 3, norVbo);
+
+//                var colorVbo = this.createVbo([
+//                    1.0, 0.0, 0.0, 1.0,
+//                    0.0, 1.0, 0.0, 1.0,
+//                    0.0, 0.0, 1.0, 1.0,
+//                    1.0, 0.0, 0.0, 1.0
+//                ]);
+
+                var colorVbo = this.createVbo(datas.col);
+                this.postVertexAttrib(program, "color", 4, colorVbo);
+
+
+
+                /**
+                 * 创建顶点缓存索引;
+                 */
+//                var vertexIbo = this.createIbo([
+//                        0, 1, 2,
+//                        1, 2, 3
+//                ]);
+                var vertexIbo = this.createIbo(datas.idx);
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, vertexIbo);
+
+
+
+                var invMatrix = m.identity(m.create());
+                var uniInvMatrix = gl.getUniformLocation(program, "invMatrix");
+                gl.uniformMatrix4fv(uniInvMatrix, false, invMatrix);
+
+                var lightDirection = [-0.5, 0.5, 0.5];
+                var uniLightDirection = gl.getUniformLocation(program, "lightDirection");
+                gl.uniform3fv(uniLightDirection, lightDirection);
+
+                /**
+                 * 创建视图矩阵
+                 * @type {*}
+                 */
+                var vMatrix = m.identity(m.create());
+                m.lookAt([0.0, 0.0, 10.0], [0, 0, 0], [0, 1, 0], vMatrix);
+                var univMatrix = gl.getUniformLocation(program, "vMatrix");
+                gl.uniformMatrix4fv(univMatrix, false, vMatrix);
+
+                /**
+                 * 创建投影矩阵
+                 * @type {*}
+                 */
+                var pMatrix = m.identity(m.create());
+                m.perspective(90, 500 / 400, 0.1, 100, pMatrix);
+                var unipMatrix = gl.getUniformLocation(program, "pMatrix");
+                gl.uniformMatrix4fv(unipMatrix, false, pMatrix);
+
+                /**
+                 * 开启剔除测试
+                 */
+                gl.enable(gl.CULL_FACE);
+//                gl.enable(gl.CULL_FACE_MODE);
+
+                /**
+                 * 开启深度测试
+                 */
+                gl.enable(gl.DEPTH_TEST);
+                gl.depthFunc(gl.LEQUAL);
+
+                /**
+                 *
+                 */
+                gl.enable(gl.BLEND);
+                gl.blendColor(1.0, 0, 0, 1);
+
+            },
+            render: function () {
+
+                var gl = this.getGLContext();
+                gl.clearColor(0.0, 0.0, 0.0, 1.0);
+                gl.clearDepth(1.0);
+                gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+                var mMatrix = m.identity(m.create());
+                angle += 0.1;
+                m.rotate(mMatrix,[0.0, 1.0, 1.0], angle, mMatrix);
+                var unimMatrix = gl.getUniformLocation(program, "mMatrix");
+                gl.uniformMatrix4fv(unimMatrix, false, mMatrix);
+
+                gl.drawElements(gl.TRIANGLES, datas.idx.length, gl.UNSIGNED_SHORT, 0);
+                gl.flush();
+
+//                m.identity(mMatrix);
+//                m.translate(mMatrix, [-1.5, 0.0, 0.0], mMatrix);
+//
+//                gl.uniformMatrix4fv(unimMatrix, false, mMatrix);
+//                gl.drawArrays(gl.TRIANGLES, 0, 3);
+//                gl.flush();
+
+            }
+        });
+        
+        
+        function torus(row, column, irad, orad) {
+            var pos = new Array(), nor = new Array(),
+                    col = new Array(), idx = new Array();
+            for(var i = 0; i <= row; i++){
+                var r = Math.PI * 2 / row * i;
+                var rr = Math.cos(r);
+                var ry = Math.sin(r);
+                for(var ii = 0; ii <= column; ii++){
+                    var tr = Math.PI * 2 / column * ii;
+                    var tx = (rr * irad + orad) * Math.cos(tr);
+                    var ty = ry * irad;
+                    var tz = (rr * irad + orad) * Math.sin(tr);
+                    var rx = rr * Math.cos(tr);
+                    var rz = rr * Math.sin(tr);
+                    pos.push(tx, ty, tz);
+                    nor.push(rx, ry, rz);
+                    var tc = hsva(360 / column * ii, 1, 1, 1);
+                    col.push(tc[0], tc[1], tc[2], tc[3]);
+                }
+            }
+            for(i = 0; i < row; i++){
+                for(ii = 0; ii < column; ii++){
+                    r = (column + 1) * i + ii;
+                    idx.push(r, r + column + 1, r + 1);
+                    idx.push(r + column + 1, r + column + 2, r + 1);
+                }
+            }
+            return {
+                pos: pos,
+                col: col,
+                idx: idx,
+                nor: nor
+            };
+        }
+
+        function hsva(h, s, v, a){
+            if(s > 1 || v > 1 || a > 1){return;}
+            var th = h % 360;
+            var i = Math.floor(th / 60);
+            var f = th / 60 - i;
+            var m = v * (1 - s);
+            var n = v * (1 - s * f);
+            var k = v * (1 - s * (1 - f));
+            var color = [];
+            if(!s > 0 && !s < 0){
+                color.push(v, v, v, a);
+            } else {
+                var r = [v, n, m, m, k, v];
+                var g = [k, v, v, n, m, m];
+                var b = [m, m, k, v, v, n];
+                color.push(r[i], g[i], b[i], a);
+            }
+            return color;
+        }
+
+        app.renderInit();
+        nl.timer.setLooper(app.render, app);
+
+
+    })(nl, window, document);
+</script>
+</body>
+</html>
