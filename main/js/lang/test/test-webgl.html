@@ -183,7 +183,7 @@ void main(void){
         function torus(row, column, irad, orad) {
             var pos = new Array(), nor = new Array(),
                     col = new Array(), idx = new Array();
-            for(var i = 0; i <= row; i++){
+            for (var i = 0; i <= row; i++) {
                 var r = Math.PI * 2 / row * i;
                 var rr = Math.cos(r);
                 var ry = Math.sin(r);
@@ -200,7 +200,7 @@ void main(void){
                     col.push(tc[0], tc[1], tc[2], tc[3]);
                 }
             }
-            for(i = 0; i < row; i++){
+            for (i = 0; i < row; i++) {
                 for(ii = 0; ii < column; ii++){
                     r = (column + 1) * i + ii;
                     idx.push(r, r + column + 1, r + 1);
@@ -215,7 +215,7 @@ void main(void){
             };
         }
 
-        function hsva(h, s, v, a){
+        function hsva(h, s, v, a) {
             if(s > 1 || v > 1 || a > 1){return;}
             var th = h % 360;
             var i = Math.floor(th / 60);
@@ -224,7 +224,7 @@ void main(void){
             var n = v * (1 - s * f);
             var k = v * (1 - s * (1 - f));
             var color = [];
-            if(!s > 0 && !s < 0){
+            if (!s > 0 && !s < 0) {
                 color.push(v, v, v, a);
             } else {
                 var r = [v, n, m, m, k, v];

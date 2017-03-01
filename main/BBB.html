@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+</head>
+<body>
+<div id="app">
+    {{ message }}
+</div>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            message: 'Hello Vue!'
+        }
+    });
+
+
+
+
+    var a = {};
+    Object.defineProperty(a, "hello",
+            {
+                enumerable: true,
+                configurable: true,
+                get: function reactiveGetter () {
+                    console.log("hello get");
+                    return value;
+                },
+                set: function reactiveSetter (newVal) {
+                    console.log("hello set");
+                    value = newVal;
+                }
+            }
+    );
+    a.hello = "papapapapapapa";
+    alert(a.hello);
+
+</script>
+</body>
+</html>

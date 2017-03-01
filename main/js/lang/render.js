@@ -1,9 +1,6 @@
 var nl = nl || {};
 (function (nl, win, doc) {
 
-    var defaultGLSLVertex = "";
-
-    var defaultGLSLFragment = "";
 
     var render = nl.render = {};
     var webgl = render.webgl = nl.extend(nl.Object);
@@ -94,8 +91,7 @@ var nl = nl || {};
     }
 
 
-
-
+    
     // webgl.prototype.clearColor = function (r, g, b, a) {
     //     var gl = this._glContext;
     //     gl.clearColor(r, g, b, a);
